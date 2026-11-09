@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, UploadFile, File, Form
 from sqlalchemy.orm import Session
+from datetime import date
+
 
 from app.controllers.payment import payment_controller as ctl
 from app.core.constants import Role
@@ -33,6 +35,15 @@ def destination(claim_id: int, db: Session = Depends(get_db), user: User = Depen
 
 
 @router.post("/{claim_id}/pay", response_model=ReimbursementOut, summary="Tandai sudah dibayar")
-def pay(claim_id: int, payload: PayRequest, db: Session = Depends(get_db),
-        user: User = Depends(finance_only), ip=Depends(get_client_ip)):
-    return ctl.pay(db, claim_id, payload, user, ip)
+def pay(
+    claim_id: int,
+    payment_date: date = Form(...),
+    bank_reference: str = Form(..., min_length=3, max_length=100),
+    note: str | None = Form(None),
+    proof_file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(finance_only),
+    ip=Depends(get_client_ip),
+):
+    payload = PayRequest(payment_date=payment_date, bank_reference=bank_reference, note=note)
+    return ctl.pay(db, claim_id, payload, proof_file, user, ip)

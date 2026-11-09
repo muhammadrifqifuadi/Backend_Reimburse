@@ -1,3 +1,5 @@
+import os
+
 from datetime import date
 from typing import Optional
 
@@ -67,6 +69,12 @@ def download_attachment(attachment_id: int, db: Session = Depends(get_db), user:
 def delete_attachment(attachment_id: int, db: Session = Depends(get_db), user: User = Depends(claimant)):
     ctl.delete_attachment(db, attachment_id, user)
     return Response(status_code=204)
+
+@router.get("/{claim_id}/payment-proof", summary="Unduh bukti transfer dari finance")
+def download_payment_proof(claim_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    payment = ctl.get_payment_proof_for_download(db, claim_id, user)
+    ext = os.path.splitext(payment.proof_file_path)[1]
+    return FileResponse(payment.proof_file_path, filename=f"bukti-transfer-{claim_id}{ext}")
 
 
 @router.get("/{claim_id}", response_model=ReimbursementOut)

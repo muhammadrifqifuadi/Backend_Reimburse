@@ -11,7 +11,8 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    employee_id: Mapped[str] = mapped_column(String(30), unique=True, index=True)  # NIK
+    employee_id: Mapped[Optional[str]] = mapped_column(String(30), unique=True, index=True)  # NIK
+    # employee_id: Mapped[str] = mapped_column(String(30), unique=True, index=True)  # NIK
     full_name: Mapped[str] = mapped_column(String(100))
     email: Mapped[str] = mapped_column(String(150), unique=True, index=True)
     phone: Mapped[Optional[str]] = mapped_column(String(30))

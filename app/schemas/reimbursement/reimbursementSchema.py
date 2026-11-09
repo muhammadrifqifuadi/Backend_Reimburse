@@ -206,3 +206,17 @@ class ReimbursementListOut(ORMModel):
     has_policy_flag: bool
     submitted_at: Optional[datetime] = None
     created_at: datetime
+
+class PaymentOut(ORMModel):
+    id: int
+    reimbursement_id: int
+    paid_by: int
+    paid_by_name: Optional[str] = None
+    payment_date: date
+    amount: Money
+    bank_name: Optional[str] = None
+    account_number_masked: Optional[str] = None
+    bank_reference: Optional[str] = None
+    note: Optional[str] = None
+    has_proof: bool = False
+    created_at: datetime

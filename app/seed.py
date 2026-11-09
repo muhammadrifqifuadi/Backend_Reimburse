@@ -1,12 +1,3 @@
-"""Membuat ADMIN PERTAMA. Tidak ada data dummy: departemen, level jabatan, kategori, kebijakan limit,
-dan user lain diisi sendiri oleh admin lewat API (/masterdata/...).
-
-Pemakaian (interaktif, password ditanya dan tidak ditampilkan):
-    python -m app.seed --email admin@perusahaan.com --name "Nama Admin"
-
-Non-interaktif (mis. Docker): isi ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD di environment / .env.
-Aman dijalankan berulang: jika admin sudah ada, tidak membuat apa pun.
-"""
 import argparse
 import getpass
 import sys

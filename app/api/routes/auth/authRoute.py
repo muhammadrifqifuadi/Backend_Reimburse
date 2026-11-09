@@ -50,3 +50,14 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
 def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db), ip: str | None = Depends(get_client_ip)):
     auth_controller.reset_password(db, payload.token, payload.new_password, ip)
     return {"message": "Password berhasil diubah. Silakan login dengan password baru."}
+
+
+
+@router.post("/logout", response_model=Message, summary="Logout: putus semua sesi aktif")
+def logout(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user_any),
+    ip: str | None = Depends(get_client_ip),
+):
+    auth_controller.logout(db, user, ip)
+    return {"message": "Logout berhasil"}

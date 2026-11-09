@@ -1,4 +1,4 @@
-import json
+import json, os
 from datetime import datetime, time, timedelta
 
 from fastapi import HTTPException
@@ -14,7 +14,10 @@ from app.core.constants import (
     Role,
     Status,
 )
+
+from app.models.payment.payment import Payment
 from app.core.database import utcnow
+from app.core.constants import Role
 from app.models.auth.user import User
 from app.models.bank_account.bank_account import BankAccount
 from app.models.masterdata.expense_category import ExpenseCategory
@@ -260,13 +263,27 @@ def delete_attachment(db: Session, attachment_id: int, user: User) -> None:
     db.commit()
     file_storage.delete_file(path)
 
-
 def get_attachment_for_download(db: Session, attachment_id: int, user: User) -> Attachment:
     att = db.get(Attachment, attachment_id)
     if not att:
         raise HTTPException(404, "Lampiran tidak ditemukan")
-    get_visible_claim(db, att.reimbursement_id, user)
+    claim = get_claim(db, att.reimbursement_id)
+    if claim.user_id != user.id and user.role not in (Role.HRD, Role.FINANCE, Role.ADMIN):
+        raise HTTPException(403, "Anda tidak berhak mengakses lampiran ini")
+    if not att.file_path or not os.path.isfile(att.file_path):
+        raise HTTPException(404, "File kwitansi tidak ditemukan di server.")
     return att
+
+
+def get_payment_proof_for_download(db: Session, claim_id: int, user: User) -> Payment:
+    claim = get_claim(db, claim_id)
+    if claim.user_id != user.id and user.role not in (Role.HRD, Role.FINANCE, Role.ADMIN):
+        raise HTTPException(403, "Anda tidak berhak mengakses bukti pembayaran ini")
+    if not claim.payment or not claim.payment.proof_file_path:
+        raise HTTPException(404, "Bukti pembayaran belum tersedia")
+    if not os.path.isfile(claim.payment.proof_file_path):
+        raise HTTPException(404, "File bukti pembayaran tidak ditemukan di server.")
+    return claim.payment
 
 
 # ---------------- submit & cancel ----------------

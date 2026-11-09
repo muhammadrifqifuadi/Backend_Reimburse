@@ -120,6 +120,13 @@ def _deliver_credentials(db: Session, user: User, temp_password: str, reset: boo
         raise HTTPException(502, f"Gagal mengirim email ke {user.email}. Perubahan dibatalkan, silakan coba lagi.")
 
 
+PREFIX_BY_ROLE = {
+    "admin": "ADM",
+    "finance": "FIN",
+    "karyawan": "EMP",
+}
+
+
 def create_user(db: Session, data: dict, actor: User, ip: str | None):
     """Buat user. Password sementara dibuat acak oleh sistem dan dikirim ke email user; admin tidak melihatnya."""
     data = dict(data)
@@ -132,7 +139,11 @@ def create_user(db: Session, data: dict, actor: User, ip: str | None):
         db.flush()
     except IntegrityError:
         db.rollback()
-        raise HTTPException(409, "Email atau NIK sudah terdaftar")
+        raise HTTPException(409, "Email sudah terdaftar")
+
+    prefix = PREFIX_BY_ROLE.get(user.role, "EMP")
+    user.employee_id = f"{prefix}-{user.id:04d}"
+
     log_audit(db, actor.id, "create_user", "user", user.id, {"email": user.email, "role": user.role}, ip)
     _deliver_credentials(db, user, temp, reset=False)
     db.commit()
@@ -152,6 +163,12 @@ def reset_user_password(db: Session, user_id: int, actor: User, ip: str | None) 
     user.token_version += 1
     log_audit(db, actor.id, "admin_reset_password", "user", user.id, ip=ip)
     _deliver_credentials(db, user, temp, reset=True)
+    db.commit()
+
+def logout_user(db: Session, user: User, ip: str | None = None) -> None:
+    """Logout: invalidate semua token aktif user ini."""
+    user.token_version += 1
+    log_audit(db, user.id, "logout", "user", user.id, ip=ip)
     db.commit()
 
 

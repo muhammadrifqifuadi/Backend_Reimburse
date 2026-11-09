@@ -122,7 +122,7 @@ class PolicyOut(ORMModel):
 
 # ---- user ----
 class UserCreate(BaseModel):
-    employee_id: str = Field(min_length=2, max_length=30)
+    # employee_id: str = Field(min_length=2, max_length=30)
     full_name: str = Field(min_length=2, max_length=100)
     email: EmailStr
     phone: Optional[str] = Field(default=None, max_length=30)

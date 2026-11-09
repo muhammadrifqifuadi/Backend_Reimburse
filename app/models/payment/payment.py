@@ -21,6 +21,7 @@ class Payment(Base):
     bank_reference: Mapped[Optional[str]] = mapped_column(String(100))  # no. referensi transfer
     note: Mapped[Optional[str]] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    proof_file_path: Mapped[Optional[str]] = mapped_column(String(255))
 
     reimbursement = relationship("Reimbursement", back_populates="payment")
     payer = relationship("User", foreign_keys=[paid_by])
@@ -28,3 +29,7 @@ class Payment(Base):
     @property
     def paid_by_name(self) -> Optional[str]:
         return self.payer.full_name if self.payer else None
+    
+    @property
+    def has_proof(self) -> bool:
+        return bool(self.proof_file_path)

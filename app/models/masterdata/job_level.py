@@ -10,5 +10,5 @@ class JobLevel(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     code: Mapped[str] = mapped_column(String(20), unique=True, index=True)
     name: Mapped[str] = mapped_column(String(100))
-    rank_order: Mapped[int] = mapped_column(Integer, default=1)  # makin besar makin senior
+    rank_order: Mapped[int] = mapped_column(Integer, unique=True, default=1)  # makin besar makin senior
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
